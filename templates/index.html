@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Red-Black Tree Visualization System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- D3.js -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="dark-theme">
+    <div class="app-container">
+        <!-- Left Sidebar: Controls -->
+        <aside class="sidebar">
+            <div class="logo-container">
+                <i class="fa-solid fa-diagram-project"></i>
+                <h2>RB Tree Vis</h2>
+            </div>
+            
+            <div class="control-panel">
+                <div class="input-group">
+                    <input type="text" id="node-value" placeholder="e.g., 10, 20, 30" title="Enter a single number or comma-separated numbers">
+                </div>
+                
+                <div class="button-grid">
+                    <button id="btn-insert" class="primary-btn"><i class="fa-solid fa-plus"></i> Insert</button>
+                    <button id="btn-delete" class="danger-btn"><i class="fa-solid fa-trash"></i> Delete</button>
+                    <button id="btn-search" class="secondary-btn"><i class="fa-solid fa-magnifying-glass"></i> Search</button>
+                </div>
+                
+                <div class="divider"></div>
+                
+                <h3>Playback Controls</h3>
+                <div class="playback-controls">
+                    <button id="btn-first" class="icon-btn" title="Jump to Start"><i class="fa-solid fa-backward-step"></i></button>
+                    <button id="btn-prev" class="icon-btn" title="Step Back"><i class="fa-solid fa-play fa-flip-horizontal"></i></button>
+                    <button id="btn-play" class="primary-btn play-btn" title="Play/Pause"><i class="fa-solid fa-pause"></i></button>
+                    <button id="btn-next" class="icon-btn" title="Step Forward"><i class="fa-solid fa-play"></i></button>
+                    <button id="btn-last" class="icon-btn" title="Jump to End"><i class="fa-solid fa-forward-step"></i></button>
+                </div>
+                <div class="timeline-container">
+                    <input type="range" id="timeline" min="0" max="0" value="0" class="timeline-slider">
+                </div>
+                <div class="speed-control">
+                    <label for="speed-slider">Speed: <span id="speed-val">Medium</span></label>
+                    <input type="range" id="speed-slider" min="1" max="100" value="50">
+                </div>
+
+                <div class="divider"></div>
+
+                <h3>Advanced Options</h3>
+                <div class="toggle-group">
+                    <label class="checkbox-label"><input type="checkbox" id="show-nil"> Show NIL Leaves</label>
+                    <label class="checkbox-label"><input type="checkbox" id="colorblind-mode"> Colorblind Mode</label>
+                </div>
+
+                <div class="divider"></div>
+                
+                <div class="theme-toggle">
+                    <label class="switch">
+                        <input type="checkbox" id="theme-switch">
+                        <span class="slider round"></span>
+                    </label>
+                    <span id="theme-label">Light Mode</span>
+                </div>
+                
+                <button id="btn-reset" class="outline-btn" style="margin-top: 15px;"><i class="fa-solid fa-rotate-left"></i> Reset Tree</button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="stats-panel">
+                    <div class="stat-card">
+                        <span class="stat-label">Nodes:</span>
+                        <span class="stat-value" id="stat-nodes">0</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">Height:</span>
+                        <span class="stat-value" id="stat-height">0</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">Black Height:</span>
+                        <span class="stat-value" id="stat-bh">0</span>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button id="btn-download" class="icon-btn" title="Download Image"><i class="fa-solid fa-download"></i></button>
+                </div>
+            </header>
+
+            <div class="visualization-area" id="vis-container">
+                <!-- SVG will be injected here by D3 -->
+            </div>
+
+            <!-- Bottom Panel for explanations -->
+            <div class="bottom-panel">
+                <div class="explanation-box">
+                    <h3>Current Operation</h3>
+                    <p id="current-operation-text">Ready to start. Insert a node to begin.</p>
+                </div>
+                <div class="code-box">
+                    <h3>Pseudocode</h3>
+                    <pre id="code-block" class="code-font">
+<span id="line-i1">function insert(val):</span>
+<span id="line-i2">  node = bst_insert(val)</span>
+<span id="line-i3">  node.color = RED</span>
+<span id="line-i4">  while node.parent.color == RED:</span>
+<span id="line-i5">    uncle = get_uncle(node)</span>
+<span id="line-i6">    if uncle.color == RED:</span>
+<span id="line-i7">      recolor_parent_uncle_grandparent()</span>
+<span id="line-i8">      node = grandparent</span>
+<span id="line-i9">    else:</span>
+<span id="line-i10">      if triangle_case: rotate_parent()</span>
+<span id="line-i11">      rotate_grandparent()</span>
+<span id="line-i12">      recolor()</span>
+<span id="line-i13">  root.color = BLACK</span>
+                    </pre>
+                </div>
+            </div>
+        </main>
+
+        <!-- Right Sidebar: Operation Log & Traversals -->
+        <aside class="history-sidebar">
+            <div class="history-section">
+                <h3>Operation Log</h3>
+                <ul id="history-log" class="history-log">
+                    <li class="empty-log">No operations yet.</li>
+                </ul>
+            </div>
+            <div class="traversals-section">
+                <h3>Traversals</h3>
+                <div class="button-grid-2">
+                    <button class="traversal-btn" data-type="inorder">Inorder</button>
+                    <button class="traversal-btn" data-type="preorder">Preorder</button>
+                    <button class="traversal-btn" data-type="postorder">Postorder</button>
+                    <button class="traversal-btn" data-type="levelorder">Level</button>
+                </div>
+                <div class="traversal-result-box" id="traversal-result">
+                    <p>Result will appear here</p>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Error Toast -->
+    <div id="toast" class="toast hidden"></div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
