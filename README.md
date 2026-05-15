@@ -91,11 +91,6 @@ RED_BLACK_TREE/
 5. **Open the Application:**
    Open your web browser and navigate to `http://127.0.0.1:5000`
 
-## 📸 Screenshots
-*(Add your screenshots here)*
-- **Dark Mode Visualization**
-- **Light Mode UI**
-- **Rotation Animation Sequence**
 
 ## 🔮 Future Enhancements
 - Add step-back functionality to reverse operations.
